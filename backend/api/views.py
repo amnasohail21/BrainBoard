@@ -1,3 +1,5 @@
+from rest_framework.response import Response
+from rest_framework import status
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics
@@ -32,3 +34,12 @@ class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print(serializer.errors)  # <-- This prints detailed errors in console
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
